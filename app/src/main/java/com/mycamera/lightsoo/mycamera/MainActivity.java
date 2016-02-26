@@ -3,6 +3,7 @@ package com.mycamera.lightsoo.mycamera;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,7 +33,7 @@ import java.io.IOException;
  *
  *  앨범의 경우! ACTION_PICK + EXTRENAL_CONTENT_URL사용!
  * 1. 앨덤으로 들어가 PICK된 이미지의 URL을 가져온다음 크롭(INTENT)으로 프로세싱 과정을 거친다.
- * 2.다음 사진을 비트맵팩토리를 이용하여 decode()를 하고 이미지뷰에 setImageBitmap()한다
+ * 2. 다음 사진을 비트맵팩토리를 이용하여 decode()를 하고 이미지뷰에 setImageBitmap()한다
  */
 
 public class MainActivity extends AppCompatActivity {
@@ -97,23 +98,24 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     String url = MediaStore.Images.Media.insertImage(getContentResolver(), imagePath, "카메라 이미지", "기존 이미지");
                     Uri photouri = Uri.parse(url);
-
-                    Log.d("url : ", url);                        // D/url :: content://media/external/images/media/121019
-                    Log.d("photourl : ", photouri.toString());  // D/photourl :: content://media/external/images/media/121019
                     //ContentResolver가 처리할수있는 value들을 저장하는데 사용
                     ContentValues values = new ContentValues();
-                    //사진찍힌 이후 각도 조정인데 0도로 하자
                     values.put(MediaStore.Images.Media.ORIENTATION, 90);
-//                   뭔지 잘모르겟지만
-                    //URL의 value로 대체한다
+                   //뭔지 잘모르겟지만, URL의 value로 대체한다
                     getContentResolver().update(photouri, values, null, null);
-                    //이미지 프로세싱
-                    cropImage(photouri);
-
+                    cropImage(photouri);//이미지 프로세싱
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-
+                break;
+            case REQUEST_ALBUM :
+            case REQUEST_CROP :
+                String filePath = Environment.getExternalStorageDirectory() + "/"
+                        + TEMP_PHOTO_FILE;
+                BitmapFactory.Options options = new BitmapFactory.Options();
+//                options.inSampleSize = 4;
+                Bitmap selectedImage = BitmapFactory.decodeFile(filePath, options);
+                imageView.setImageBitmap(selectedImage);
                 break;
         }
 
@@ -168,8 +170,21 @@ public class MainActivity extends AppCompatActivity {
         if (uri != null) {
             Intent photoPickerIntent = new Intent(
                     "com.android.camera.action.CROP", uri);
-            photoPickerIntent.putExtra("aspectX", 1);
-            photoPickerIntent.putExtra("aspectY", 1);
+            //crop한 이미지를 저장할때 X by Y 사이즈로 저장
+            //크롭된 이미지를 이크기만큼 받아오도록 지정하는거야
+            //아니면 사용자가 지정한 만큼 받아와와
+//            photoPickerIntent.putExtra("outputX", 300);
+//            photoPickerIntent.putExtra("outputY", 200);
+
+            photoPickerIntent.putExtra("scale", false);
+
+            //Bundle을 통해 bitmap아로 데이터를 받아오겠다.
+//            photoPickerIntent.putExtra("return-data", true);
+
+            //crop박스의 x,y축 비율
+//            photoPickerIntent.putExtra("aspectX", 1);
+//            photoPickerIntent.putExtra("aspectY", 1);
+
             photoPickerIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                     getTempUri());
             photoPickerIntent.putExtra("outputFormat",
