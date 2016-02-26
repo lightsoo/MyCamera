@@ -32,7 +32,7 @@ import java.io.IOException;
  *
  *  앨범의 경우! ACTION_PICK + EXTRENAL_CONTENT_URL사용!
  * 1. 앨덤으로 들어가 PICK된 이미지의 URL을 가져온다음 크롭(INTENT)으로 프로세싱 과정을 거친다.
- * 2.
+ * 2.다음 사진을 비트맵팩토리를 이용하여 decode()를 하고 이미지뷰에 setImageBitmap()한다
  */
 
 public class MainActivity extends AppCompatActivity {
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     //ContentResolver가 처리할수있는 value들을 저장하는데 사용
                     ContentValues values = new ContentValues();
                     //사진찍힌 이후 각도 조정인데 0도로 하자
-                    values.put(MediaStore.Images.Media.ORIENTATION, 0);
+                    values.put(MediaStore.Images.Media.ORIENTATION, 90);
 //                   뭔지 잘모르겟지만
                     //URL의 value로 대체한다
                     getContentResolver().update(photouri, values, null, null);
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         btn_album = (Button)findViewById(R.id.btn_album);
         btn_camera = (Button)findViewById(R.id.btn_camera);
     }
+
     //카메라 사용
     private void getCameraImage(){
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
