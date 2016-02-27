@@ -17,11 +17,23 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.mycamera.lightsoo.mycamera.Manager.NetworkManager;
+import com.mycamera.lightsoo.mycamera.RestAPI.FileAPI;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.RequestBody;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 
 /**
@@ -46,13 +58,17 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ALBUM = 1;
     private static final int REQUEST_CROP = 2;
 
-
     //카메라를 찍은 다음 사진을 임시로 저장해서 이후에 크롭 인텐트를 이용해서
     // THEMP_PHOTO_FILE로 명명해서 크롭된 이미지를 사용
 
     private static final String TEMP_CAMERA_FILE = "temp_camera.jpg";
     private static final String TEMP_PHOTO_FILE = "temp_album.jpg";
+////////////////////////////////////////////////////////////////////////////////
+    //파일 업로드 테스트
+    private Button btn_upload;
+    private EditText title, director, year;
 
+    private Uri imageIri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +92,46 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btn_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fileUpload();
+            }
+        });
     }
+
+    public void fileUpload(){
+
+        File file = new File(Environment.getExternalStorageDirectory(),
+                TEMP_PHOTO_FILE);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        Call call = NetworkManager.getInstance()
+                .getAPI(FileAPI.class)
+                .upload(requestBody,
+                        title.getText().toString(),
+                        director.getText().toString(),
+                        Integer.parseInt(year.getText().toString()));
+        call.enqueue(new Callback() {
+            @Override
+            public void onResponse(Response response, Retrofit retrofit) {
+                if(response.isSuccess()){
+                    Toast.makeText(MainActivity.this, "파일업로드 성공인경우code(200~300)",
+                            Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(MainActivity.this, "영화업로드 실패는 아닌데 다른 코드..",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Toast.makeText(MainActivity.this, t.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
 
     //카메라를 통한 사진 or 앨범에서 가져온 이미지를 crop을 통해 처리한다
     @Override
@@ -126,6 +181,15 @@ public class MainActivity extends AppCompatActivity {
         imageView = (ImageView)findViewById(R.id.imageView);
         btn_album = (Button)findViewById(R.id.btn_album);
         btn_camera = (Button)findViewById(R.id.btn_camera);
+        btn_upload = (Button)findViewById(R.id.btn_upload);
+
+
+        title = (EditText)findViewById(R.id.title);
+        director = (EditText)findViewById(R.id.director);
+        year = (EditText)findViewById(R.id.year);
+
+
+
     }
 
     //카메라 사용
@@ -201,7 +265,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private File getTempFile() {
-
         if (Environment.getExternalStorageState().equals(
                 Environment.MEDIA_MOUNTED)) {
             //TEMP_PHOTO_FILE이걸로 임시파일을 만들어서 사용
@@ -211,10 +274,8 @@ public class MainActivity extends AppCompatActivity {
                 file.createNewFile();
             } catch (IOException e) {
             }
-
             return file;
         } else {
-
             return null;
         }
     }
@@ -230,5 +291,4 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap.CompressFormat.JPEG.toString());
         startActivityForResult(photoPickerIntent, REQUEST_ALBUM);
     }
-
 }

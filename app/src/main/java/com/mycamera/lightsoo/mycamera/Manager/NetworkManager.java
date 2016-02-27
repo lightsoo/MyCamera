@@ -13,7 +13,7 @@ import retrofit.Retrofit;
  * Created by LG on 2016-02-27.
  */
 public class NetworkManager {
-    private static final String serverURL ="http://192.168.0.17:3000/";
+    private static final String serverURL ="http://172.30.2.30:3000/";
     Retrofit client;
 
     private NetworkManager(){
