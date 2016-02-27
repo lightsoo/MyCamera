@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case REQUEST_ALBUM :
             case REQUEST_CROP :
+                //파일에 직접접근해서 사용
                 String filePath = Environment.getExternalStorageDirectory() + "/"
                         + TEMP_PHOTO_FILE;
                 BitmapFactory.Options options = new BitmapFactory.Options();
@@ -203,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (Environment.getExternalStorageState().equals(
                 Environment.MEDIA_MOUNTED)) {
-
+            //TEMP_PHOTO_FILE이걸로 임시파일을 만들어서 사용
             File file = new File(Environment.getExternalStorageDirectory(),
                     TEMP_PHOTO_FILE);
             try {
@@ -219,7 +220,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getAlbumImage(){
+        Intent photoPickerIntent = new Intent(
+                Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        photoPickerIntent.setType("image/*");
+        photoPickerIntent.putExtra("crop", "true");
 
+        photoPickerIntent.putExtra(MediaStore.EXTRA_OUTPUT, getTempUri());
+        photoPickerIntent.putExtra("outputFormat",
+                Bitmap.CompressFormat.JPEG.toString());
+        startActivityForResult(photoPickerIntent, REQUEST_ALBUM);
     }
 
 }
