@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case REQUEST_ALBUM :
             case REQUEST_CROP :
-                //파일에 직접접근해서 사용
+                //파일에 직접 접근해서 사용
                 String filePath = Environment.getExternalStorageDirectory() + "/"
                         + TEMP_PHOTO_FILE;
                 BitmapFactory.Options options = new BitmapFactory.Options();
